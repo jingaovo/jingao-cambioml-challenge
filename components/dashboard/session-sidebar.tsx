@@ -4,7 +4,7 @@ import { MessageSquarePlus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { ChatSession } from "@/lib/sessions/types";
-import { formatRelativeTime } from "@/lib/sessions/utils";
+import { formatRelativeTime, sortSessionsByActivity } from "@/lib/sessions/utils";
 import { cn } from "@/lib/utils";
 
 interface SessionSidebarProps {
@@ -24,9 +24,7 @@ export function SessionSidebar({
   onDeleteSession,
   className,
 }: SessionSidebarProps) {
-  const sortedSessions = [...sessions].sort(
-    (left, right) => right.updatedAt - left.updatedAt,
-  );
+  const displaySessions = sortSessionsByActivity(sessions);
 
   return (
     <aside
@@ -50,7 +48,7 @@ export function SessionSidebar({
 
       <div className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-1">
-          {sortedSessions.map((session) => {
+          {displaySessions.map((session) => {
             const isActive = session.id === activeSessionId;
             const isLastSession = sessions.length === 1;
 

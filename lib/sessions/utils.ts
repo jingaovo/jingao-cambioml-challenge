@@ -73,3 +73,8 @@ export function formatRelativeTime(timestamp: number): string {
     day: "numeric",
   }).format(new Date(timestamp));
 }
+
+/** Most recently active sessions first — used for display and after load */
+export function sortSessionsByActivity(sessions: ChatSession[]): ChatSession[] {
+  return [...sessions].sort((left, right) => right.updatedAt - left.updatedAt);
+}

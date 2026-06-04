@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import equal from "fast-deep-equal";
 
 import {
   createDefaultSessionsState,
@@ -37,6 +38,14 @@ export function useSessions() {
         if (index === -1) return previous;
 
         const current = previous.sessions[index];
+
+        if (
+          equal(current.messages, snapshot.messages) &&
+          equal(current.eventStore, snapshot.eventStore)
+        ) {
+          return previous;
+        }
+
         const title =
           snapshot.title ??
           (snapshot.messages.length > 0
@@ -51,8 +60,11 @@ export function useSessions() {
           updatedAt: Date.now(),
         };
 
-        const sessions = [...previous.sessions];
-        sessions[index] = updatedSession;
+        // Move to front on real activity so order survives refresh
+        const sessions = [
+          updatedSession,
+          ...previous.sessions.filter((session) => session.id !== sessionId),
+        ];
 
         return { ...previous, sessions };
       });

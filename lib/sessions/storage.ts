@@ -2,7 +2,7 @@ import type { Message } from "ai";
 
 import type { EventStoreState } from "@/lib/events/types";
 import type { ChatSession, SessionsState } from "@/lib/sessions/types";
-import { createEmptySession } from "@/lib/sessions/utils";
+import { createEmptySession, sortSessionsByActivity } from "@/lib/sessions/utils";
 
 export const SESSIONS_STORAGE_KEY = "agent-dashboard-sessions-v1";
 
@@ -67,7 +67,10 @@ export function loadSessionsFromStorage(): SessionsState {
     const parsed: unknown = JSON.parse(raw);
     if (!isSessionsState(parsed)) return createDefaultSessionsState();
 
-    return parsed;
+    return {
+      ...parsed,
+      sessions: sortSessionsByActivity(parsed.sessions),
+    };
   } catch {
     return createDefaultSessionsState();
   }
