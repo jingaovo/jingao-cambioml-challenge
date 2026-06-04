@@ -6,10 +6,20 @@ import { resolution } from "./tool";
 const NOVNC_PORT = 6080;
 const DISPLAY_ENV = { DISPLAY: ":99" };
 
+function getSnapshotId(): string {
+  const snapshotId = process.env.SANDBOX_SNAPSHOT_ID?.trim();
+  if (!snapshotId || snapshotId === "your_snapshot_id") {
+    throw new Error(
+      "SANDBOX_SNAPSHOT_ID is missing in .env.local. Save the file, then restart `pnpm dev`.",
+    );
+  }
+  return snapshotId;
+}
+
 export const getDesktop = async (id?: string) => {
   try {
     if (id) {
-      const sandbox = await Sandbox.get({ sandboxId: id });
+      const sandbox = await Sandbox.get({ name: id });
       if (sandbox.status === "running") {
         return sandbox;
       }
@@ -18,7 +28,7 @@ export const getDesktop = async (id?: string) => {
     const sandbox = await Sandbox.create({
       source: {
         type: "snapshot",
-        snapshotId: process.env.SANDBOX_SNAPSHOT_ID!,
+        snapshotId: getSnapshotId(),
       },
       timeout: 300000,
       ports: [NOVNC_PORT],
@@ -101,7 +111,7 @@ export const getDesktopURL = async (id?: string) => {
     const baseUrl = sandbox.domain(NOVNC_PORT);
     const streamUrl = `${baseUrl}/vnc.html?autoconnect=true&resize=scale&reconnect=true`;
 
-    return { streamUrl, id: sandbox.sandboxId };
+    return { streamUrl, id: sandbox.name };
   } catch (error) {
     console.error("Error in getDesktopURL:", error);
     throw error;
@@ -110,7 +120,7 @@ export const getDesktopURL = async (id?: string) => {
 
 export const killDesktop = async (id: string) => {
   try {
-    const sandbox = await Sandbox.get({ sandboxId: id });
+    const sandbox = await Sandbox.get({ name: id });
     await sandbox.stop();
   } catch (error) {
     console.error("Error killing desktop:", error);
