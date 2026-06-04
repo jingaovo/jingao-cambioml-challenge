@@ -48,6 +48,7 @@ export interface ToolCallBase {
   messageId: string;
   status: ToolCallStatus;
   timestamp: number;
+  durationMs?: number | null;
 }
 
 export interface ComputerToolCall extends ToolCallBase {

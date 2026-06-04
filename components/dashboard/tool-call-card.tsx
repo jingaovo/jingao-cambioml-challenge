@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 
+import { formatDurationMs } from "@/lib/events/format";
 import { cn } from "@/lib/utils";
 import {
   getToolCallLabel,
@@ -143,6 +144,12 @@ export function ToolCallCard({
 
         <StatusIcon className={cn("size-4 shrink-0", statusClassName)} />
       </div>
+
+      {toolCall.durationMs != null && toolCall.durationMs > 0 ? (
+        <p className="mt-1.5 text-right text-[10px] tabular-nums text-muted-foreground">
+          {formatDurationMs(toolCall.durationMs)}
+        </p>
+      ) : null}
 
       {isScreenshot &&
       toolCall.result &&

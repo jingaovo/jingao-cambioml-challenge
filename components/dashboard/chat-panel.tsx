@@ -8,6 +8,7 @@ import { DebugPanel } from "@/components/dashboard/debug-panel";
 import { PreviewMessage } from "@/components/message";
 import { Input } from "@/components/input";
 import { PromptSuggestions } from "@/components/prompt-suggestions";
+import type { AgentEvent } from "@/lib/events/types";
 import type { AgentStatus, ChatStatus } from "@/lib/types/agent";
 
 interface ChatPanelProps {
@@ -19,6 +20,10 @@ interface ChatPanelProps {
   input: string;
   debugOpen: boolean;
   selectedToolCallId: string | null;
+  eventsById: Record<string, AgentEvent>;
+  debugEvents: AgentEvent[];
+  eventCounts: Record<string, number>;
+  totalDurationMs: number;
   scrollContainerRef: RefObject<HTMLDivElement | null>;
   scrollEndRef: RefObject<HTMLDivElement | null>;
   onDebugOpenChange: (open: boolean) => void;
@@ -38,6 +43,10 @@ export function ChatPanel({
   input,
   debugOpen,
   selectedToolCallId,
+  eventsById,
+  debugEvents,
+  eventCounts,
+  totalDurationMs,
   scrollContainerRef,
   scrollEndRef,
   onDebugOpenChange,
@@ -73,6 +82,7 @@ export function ChatPanel({
             status={chatStatus}
             isLatestMessage={index === messages.length - 1}
             selectedToolCallId={selectedToolCallId}
+            eventsById={eventsById}
             onSelectToolCall={onSelectToolCall}
           />
         ))}
@@ -99,7 +109,14 @@ export function ChatPanel({
         </form>
       </div>
 
-      <DebugPanel open={debugOpen} onOpenChange={onDebugOpenChange} />
+      <DebugPanel
+        open={debugOpen}
+        onOpenChange={onDebugOpenChange}
+        agentStatus={agentStatus}
+        events={debugEvents}
+        eventCounts={eventCounts}
+        totalDurationMs={totalDurationMs}
+      />
     </div>
   );
 }

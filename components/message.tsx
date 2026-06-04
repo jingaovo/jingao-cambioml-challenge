@@ -7,9 +7,8 @@ import equal from "fast-deep-equal";
 import { Streamdown } from "streamdown";
 
 import { ToolCallCard } from "@/components/dashboard/tool-call-card";
-import {
-  extractToolCallsFromMessages,
-} from "@/lib/tool-calls/extract";
+import { agentEventToToolCall } from "@/lib/events/to-tool-call";
+import type { AgentEvent } from "@/lib/events/types";
 import type { ChatStatus } from "@/lib/types/agent";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +17,7 @@ const PurePreviewMessage = ({
   isLatestMessage,
   status,
   selectedToolCallId,
+  eventsById,
   onSelectToolCall,
 }: {
   message: Message;
@@ -25,10 +25,9 @@ const PurePreviewMessage = ({
   status: ChatStatus;
   isLatestMessage: boolean;
   selectedToolCallId: string | null;
+  eventsById: Record<string, AgentEvent>;
   onSelectToolCall: (id: string) => void;
 }) => {
-  const toolCalls = extractToolCallsFromMessages([message], status);
-
   return (
     <AnimatePresence key={message.id}>
       <motion.div
@@ -73,11 +72,10 @@ const PurePreviewMessage = ({
               }
 
               if (part.type === "tool-invocation") {
-                const toolCall = toolCalls.find(
-                  (candidate) => candidate.id === part.toolInvocation.toolCallId,
-                );
+                const event = eventsById[part.toolInvocation.toolCallId];
+                if (!event) return null;
 
-                if (!toolCall) return null;
+                const toolCall = agentEventToToolCall(event);
 
                 return (
                   <ToolCallCard
@@ -107,6 +105,7 @@ export const PreviewMessage = memo(
     if (prevProps.selectedToolCallId !== nextProps.selectedToolCallId)
       return false;
     if (prevProps.isLatestMessage !== nextProps.isLatestMessage) return false;
+    if (prevProps.eventsById !== nextProps.eventsById) return false;
     if (prevProps.message.annotations !== nextProps.message.annotations)
       return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
 
@@ -13,12 +13,8 @@ import {
 import { RightPanel } from "@/components/dashboard/right-panel";
 import { ToolDetailPanel } from "@/components/dashboard/tool-detail-panel";
 import { VncViewer } from "@/components/dashboard/vnc-viewer";
+import { useEventStore } from "@/lib/hooks/use-event-store";
 import { useSandbox } from "@/lib/hooks/use-sandbox";
-import {
-  extractToolCallsFromMessages,
-  findToolCallById,
-} from "@/lib/tool-calls/extract";
-import { deriveAgentStatus } from "@/lib/types/agent";
 import { useScrollToBottom } from "@/lib/use-scroll-to-bottom";
 import { ABORTED } from "@/lib/utils";
 
@@ -31,12 +27,10 @@ export default function DashboardPage() {
   const [mobileTab, setMobileTab] = useState<MobileTab>("chat");
 
   const { isInitializing, streamUrl, sandboxId, refreshDesktop } = useSandbox();
-  const refreshDesktopRef = useRef(refreshDesktop);
-  refreshDesktopRef.current = refreshDesktop;
 
   const stableRefreshDesktop = useCallback(() => {
-    void refreshDesktopRef.current();
-  }, []);
+    void refreshDesktop();
+  }, [refreshDesktop]);
 
   const {
     messages,
@@ -63,27 +57,25 @@ export default function DashboardPage() {
   });
 
   const chatStatus = status;
-  const agentStatus = deriveAgentStatus(chatStatus);
   const isLoading = chatStatus !== "ready";
 
-  const toolCalls = useMemo(
-    () => extractToolCallsFromMessages(messages, chatStatus),
-    [messages, chatStatus],
-  );
+  const {
+    state: eventState,
+    agentStatus,
+    eventCounts,
+    totalDurationMs,
+    runningEventId,
+    debugEvents,
+    getEventById,
+  } = useEventStore(messages, chatStatus);
 
-  const selectedToolCall = useMemo(
-    () => findToolCallById(toolCalls, selectedToolCallId),
-    [toolCalls, selectedToolCallId],
-  );
+  const selectedEvent = getEventById(selectedToolCallId);
 
   useEffect(() => {
-    const latestToolCall = toolCalls.at(-1);
-    if (!latestToolCall) return;
-
-    if (latestToolCall.status === "running") {
-      setSelectedToolCallId(latestToolCall.id);
+    if (runningEventId) {
+      setSelectedToolCallId(runningEventId);
     }
-  }, [toolCalls]);
+  }, [runningEventId]);
 
   const stop = useCallback(() => {
     stopGeneration();
@@ -136,6 +128,10 @@ export default function DashboardPage() {
       input={input}
       debugOpen={debugOpen}
       selectedToolCallId={selectedToolCallId}
+      eventsById={eventState.eventsById}
+      debugEvents={debugEvents}
+      eventCounts={eventCounts}
+      totalDurationMs={totalDurationMs}
       scrollContainerRef={scrollContainerRef}
       scrollEndRef={scrollEndRef}
       onDebugOpenChange={setDebugOpen}
@@ -151,7 +147,7 @@ export default function DashboardPage() {
     <RightPanel
       streamUrl={streamUrl}
       isInitializing={isInitializing}
-      selectedToolCall={selectedToolCall}
+      selectedEvent={selectedEvent}
       onRefreshDesktop={stableRefreshDesktop}
     />
   );
@@ -176,7 +172,7 @@ export default function DashboardPage() {
                 <h2 className="text-sm font-semibold">Tool call details</h2>
               </div>
               <div className="min-h-0 flex-1">
-                <ToolDetailPanel toolCall={selectedToolCall} />
+                <ToolDetailPanel event={selectedEvent} />
               </div>
             </div>
           ) : null}

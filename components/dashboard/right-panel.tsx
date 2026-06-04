@@ -9,19 +9,19 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import type { ToolCall } from "@/lib/types/tool-call";
+import type { AgentEvent } from "@/lib/events/types";
 
 interface RightPanelProps {
   streamUrl: string | null;
   isInitializing: boolean;
-  selectedToolCall: ToolCall | null;
+  selectedEvent: AgentEvent | null;
   onRefreshDesktop: () => void;
 }
 
 export function RightPanel({
   streamUrl,
   isInitializing,
-  selectedToolCall,
+  selectedEvent,
   onRefreshDesktop,
 }: RightPanelProps) {
   const handleRefresh = useCallback(() => {
@@ -52,7 +52,7 @@ export function RightPanel({
             </h2>
           </div>
           <div className="min-h-0 flex-1">
-            <ToolDetailPanel toolCall={selectedToolCall} />
+            <ToolDetailPanel event={selectedEvent} />
           </div>
         </div>
       </ResizablePanel>

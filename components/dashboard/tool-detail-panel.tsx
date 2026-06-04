@@ -2,11 +2,14 @@
 
 import { MousePointerClick } from "lucide-react";
 
+import { formatDurationMs, formatEventTime } from "@/lib/events/format";
+import type { AgentEvent } from "@/lib/events/types";
 import {
   getToolCallLabel,
   getToolCallTypeLabel,
 } from "@/lib/tool-calls/labels";
-import type { ToolCall, ToolCallStatus } from "@/lib/types/tool-call";
+import { agentEventToToolCall } from "@/lib/events/to-tool-call";
+import type { ToolCallStatus } from "@/lib/types/tool-call";
 import { cn } from "@/lib/utils";
 
 const STATUS_LABEL: Record<ToolCallStatus, string> = {
@@ -17,7 +20,7 @@ const STATUS_LABEL: Record<ToolCallStatus, string> = {
   error: "Failed",
 };
 
-function serializeResult(result: ToolCall["result"]): unknown {
+function serializeResult(result: AgentEvent["result"]): unknown {
   if (result === undefined) return null;
   if (typeof result === "string") return result;
   if (result.type === "image") {
@@ -27,11 +30,11 @@ function serializeResult(result: ToolCall["result"]): unknown {
 }
 
 interface ToolDetailPanelProps {
-  toolCall: ToolCall | null;
+  event: AgentEvent | null;
 }
 
-export function ToolDetailPanel({ toolCall }: ToolDetailPanelProps) {
-  if (!toolCall) {
+export function ToolDetailPanel({ event }: ToolDetailPanelProps) {
+  if (!event) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-muted-foreground">
         <MousePointerClick className="size-6 opacity-40" />
@@ -43,6 +46,7 @@ export function ToolDetailPanel({ toolCall }: ToolDetailPanelProps) {
     );
   }
 
+  const toolCall = agentEventToToolCall(event);
   const label = getToolCallLabel(toolCall);
 
   return (
@@ -61,42 +65,59 @@ export function ToolDetailPanel({ toolCall }: ToolDetailPanelProps) {
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide",
-              toolCall.status === "completed" &&
-                "bg-emerald-50 text-emerald-700",
-              toolCall.status === "running" && "bg-blue-50 text-blue-700",
-              toolCall.status === "aborted" && "bg-amber-50 text-amber-700",
-              toolCall.status === "error" && "bg-red-50 text-red-700",
-              toolCall.status === "pending" && "bg-zinc-100 text-zinc-600",
+              event.status === "completed" && "bg-emerald-50 text-emerald-700",
+              event.status === "running" && "bg-blue-50 text-blue-700",
+              event.status === "aborted" && "bg-amber-50 text-amber-700",
+              event.status === "error" && "bg-red-50 text-red-700",
+              event.status === "pending" && "bg-zinc-100 text-zinc-600",
             )}
           >
-            {STATUS_LABEL[toolCall.status]}
+            {STATUS_LABEL[event.status]}
           </span>
         </div>
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
+        <DetailSection title="Timing">
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <MetaItem label="Started" value={formatEventTime(event.timestamp)} />
+            <MetaItem
+              label="Duration"
+              value={formatDurationMs(event.duration)}
+            />
+            <MetaItem
+              label="Completed"
+              value={
+                event.completedAt
+                  ? formatEventTime(event.completedAt)
+                  : "In progress"
+              }
+            />
+          </div>
+        </DetailSection>
+
         <DetailSection title="Tool call ID">
-          <code className="text-xs text-zinc-600">{toolCall.id}</code>
+          <code className="text-xs text-zinc-600">{event.id}</code>
         </DetailSection>
 
         <DetailSection title="Payload">
-          <JsonBlock value={toolCall.args} />
+          <JsonBlock value={event.payload} />
         </DetailSection>
 
         <DetailSection title="Result">
-          <JsonBlock value={serializeResult(toolCall.result)} />
+          <JsonBlock value={serializeResult(event.result)} />
         </DetailSection>
 
-        {toolCall.toolName === "computer" &&
-        toolCall.args.action === "screenshot" &&
-        toolCall.result &&
-        typeof toolCall.result !== "string" &&
-        toolCall.result.type === "image" ? (
+        {event.toolName === "computer" &&
+        event.payload.action === "screenshot" &&
+        event.result &&
+        typeof event.result !== "string" &&
+        event.result.type === "image" ? (
           <DetailSection title="Screenshot preview">
             <div className="overflow-hidden rounded-md border border-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`data:image/png;base64,${toolCall.result.data}`}
+                src={`data:image/png;base64,${event.result.data}`}
                 alt="Tool result screenshot"
                 className="w-full"
               />
@@ -104,6 +125,17 @@ export function ToolDetailPanel({ toolCall }: ToolDetailPanelProps) {
           </DetailSection>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function MetaItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md bg-muted/50 px-2.5 py-2">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-0.5 font-medium tabular-nums">{value}</p>
     </div>
   );
 }
