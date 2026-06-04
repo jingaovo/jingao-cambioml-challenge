@@ -1,0 +1,105 @@
+"use client";
+
+import type { Message } from "ai";
+import type { RefObject } from "react";
+
+import { ChatHeader } from "@/components/dashboard/chat-header";
+import { DebugPanel } from "@/components/dashboard/debug-panel";
+import { PreviewMessage } from "@/components/message";
+import { Input } from "@/components/input";
+import { PromptSuggestions } from "@/components/prompt-suggestions";
+import type { AgentStatus, ChatStatus } from "@/lib/types/agent";
+
+interface ChatPanelProps {
+  agentStatus: AgentStatus;
+  messages: Message[];
+  chatStatus: ChatStatus;
+  isLoading: boolean;
+  isInitializing: boolean;
+  input: string;
+  debugOpen: boolean;
+  selectedToolCallId: string | null;
+  scrollContainerRef: RefObject<HTMLDivElement | null>;
+  scrollEndRef: RefObject<HTMLDivElement | null>;
+  onDebugOpenChange: (open: boolean) => void;
+  onSelectToolCall: (id: string) => void;
+  onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onStop: () => void;
+  onSubmitPrompt: (prompt: string) => void;
+}
+
+export function ChatPanel({
+  agentStatus,
+  messages,
+  chatStatus,
+  isLoading,
+  isInitializing,
+  input,
+  debugOpen,
+  selectedToolCallId,
+  scrollContainerRef,
+  scrollEndRef,
+  onDebugOpenChange,
+  onSelectToolCall,
+  onInputChange,
+  onSubmit,
+  onStop,
+  onSubmitPrompt,
+}: ChatPanelProps) {
+  return (
+    <div className="flex h-full flex-col bg-background">
+      <ChatHeader agentStatus={agentStatus} />
+
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 space-y-4 overflow-y-auto px-4 py-4"
+      >
+        {messages.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center">
+            <p className="text-sm font-medium">Start a new task</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Ask the agent to browse, click, type, or run shell commands in
+              the remote desktop.
+            </p>
+          </div>
+        ) : null}
+
+        {messages.map((message, index) => (
+          <PreviewMessage
+            key={message.id}
+            message={message}
+            isLoading={isLoading}
+            status={chatStatus}
+            isLatestMessage={index === messages.length - 1}
+            selectedToolCallId={selectedToolCallId}
+            onSelectToolCall={onSelectToolCall}
+          />
+        ))}
+        <div ref={scrollEndRef} className="h-1" />
+      </div>
+
+      {messages.length === 0 ? (
+        <PromptSuggestions
+          disabled={isInitializing}
+          submitPrompt={onSubmitPrompt}
+        />
+      ) : null}
+
+      <div className="border-t border-border bg-background p-4">
+        <form onSubmit={onSubmit}>
+          <Input
+            handleInputChange={onInputChange}
+            input={input}
+            isInitializing={isInitializing}
+            isLoading={isLoading}
+            status={chatStatus}
+            stop={onStop}
+          />
+        </form>
+      </div>
+
+      <DebugPanel open={debugOpen} onOpenChange={onDebugOpenChange} />
+    </div>
+  );
+}
