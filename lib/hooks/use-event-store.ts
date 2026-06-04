@@ -14,18 +14,26 @@ import {
 import { initialEventStoreState } from "@/lib/events/store";
 import { syncEventStore } from "@/lib/events/sync";
 import { agentEventToToolCall } from "@/lib/events/to-tool-call";
+import type { EventStoreState } from "@/lib/events/types";
 import type { ChatStatus } from "@/lib/types/agent";
 import type { ToolCall } from "@/lib/types/tool-call";
 
-export function useEventStore(messages: Message[], chatStatus: ChatStatus) {
-  const stateRef = useRef(initialEventStoreState);
+export function useEventStore(
+  messages: Message[],
+  chatStatus: ChatStatus,
+  sessionId: string,
+  persistedStore: EventStoreState,
+) {
+  const sessionRef = useRef(sessionId);
+  const stateRef = useRef(persistedStore);
+
+  if (sessionRef.current !== sessionId) {
+    sessionRef.current = sessionId;
+    stateRef.current = persistedStore;
+  }
 
   const state = useMemo(() => {
-    const nextState = syncEventStore(
-      messages,
-      chatStatus,
-      stateRef.current,
-    );
+    const nextState = syncEventStore(messages, chatStatus, stateRef.current);
     stateRef.current = nextState;
     return nextState;
   }, [messages, chatStatus]);
@@ -73,3 +81,5 @@ export function useEventStore(messages: Message[], chatStatus: ChatStatus) {
     getEventById,
   };
 }
+
+export { initialEventStoreState };

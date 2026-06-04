@@ -13,6 +13,7 @@ import type { AgentStatus, ChatStatus } from "@/lib/types/agent";
 
 interface ChatPanelProps {
   agentStatus: AgentStatus;
+  sessionTitle: string;
   messages: Message[];
   chatStatus: ChatStatus;
   isLoading: boolean;
@@ -36,6 +37,7 @@ interface ChatPanelProps {
 
 export function ChatPanel({
   agentStatus,
+  sessionTitle,
   messages,
   chatStatus,
   isLoading,
@@ -58,7 +60,7 @@ export function ChatPanel({
 }: ChatPanelProps) {
   return (
     <div className="flex h-full flex-col bg-background">
-      <ChatHeader agentStatus={agentStatus} />
+      <ChatHeader agentStatus={agentStatus} sessionTitle={sessionTitle} />
 
       <div
         ref={scrollContainerRef}

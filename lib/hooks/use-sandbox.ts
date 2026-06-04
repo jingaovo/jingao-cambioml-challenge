@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { getDesktopURL } from "@/lib/sandbox/utils";
@@ -9,12 +9,14 @@ export function useSandbox() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [sandboxId, setSandboxId] = useState<string | null>(null);
+  const sandboxIdRef = useRef<string | null>(null);
+  sandboxIdRef.current = sandboxId;
 
   const refreshDesktop = useCallback(async () => {
     try {
       setIsInitializing(true);
       const { streamUrl: nextStreamUrl, id } = await getDesktopURL(
-        sandboxId ?? undefined,
+        sandboxIdRef.current ?? undefined,
       );
       setStreamUrl(nextStreamUrl);
       setSandboxId(id);
@@ -24,7 +26,7 @@ export function useSandbox() {
     } finally {
       setIsInitializing(false);
     }
-  }, [sandboxId]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
