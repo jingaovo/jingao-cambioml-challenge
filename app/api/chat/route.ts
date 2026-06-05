@@ -4,7 +4,7 @@ import { killDesktop } from "@/lib/sandbox/utils";
 import { bashTool, computerTool } from "@/lib/sandbox/tool";
 import { prunedMessages } from "@/lib/utils";
 
-// Allow streaming responses up to 30 seconds
+// Vercel serverless limit in seconds (5 min for multi-step tool runs).
 export const maxDuration = 300;
 
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     await req.json();
   try {
     const result = streamText({
-      model: anthropic("claude-sonnet-4-5-20250929"), // Using Sonnet for computer use
+      model: anthropic("claude-sonnet-4-5-20250929"),
       system:
         "You are a helpful assistant with access to a computer. " +
         "Use the computer tool to help the user with their requests. " +
@@ -26,19 +26,18 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create response stream
     const response = result.toDataStreamResponse({
-      // @ts-expect-error eheljfe
-      getErrorMessage(error) {
+      getErrorMessage(error: unknown) {
         console.error(error);
-        return error;
+        if (error instanceof Error) return error.message;
+        return String(error);
       },
     });
 
     return response;
   } catch (error) {
     console.error("Chat API error:", error);
-    await killDesktop(sandboxId); // Force cleanup on error
+    await killDesktop(sandboxId);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

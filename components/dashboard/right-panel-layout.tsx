@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/resizable";
 
 interface RightPanelLayoutProps {
-  /** Stable slot — pass a memoized DesktopStreamPanel from outside the chat tree */
+  // Pass the memoized panel from page.tsx, not from inside the chat tree.
   streamPanel: React.ReactNode;
   toolDetailPanel: React.ReactNode;
 }

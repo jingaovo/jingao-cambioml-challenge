@@ -74,7 +74,7 @@ export function formatRelativeTime(timestamp: number): string {
   }).format(new Date(timestamp));
 }
 
-/** Most recently active sessions first — used for display and after load */
+// Sidebar order: most recently updated first.
 export function sortSessionsByActivity(sessions: ChatSession[]): ChatSession[] {
   return [...sessions].sort((left, right) => right.updatedAt - left.updatedAt);
 }

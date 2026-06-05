@@ -3,6 +3,7 @@
 import { useSessionWorkspace } from "@/lib/hooks/use-session-workspace";
 import type { ChatSession, SessionSnapshot } from "@/lib/sessions/types";
 
+// Wires one session's chat + event store. Parent sets key={sessionId} to remount on switch.
 interface ActiveSessionBridgeProps {
   session: ChatSession;
   sandboxId: string | null;

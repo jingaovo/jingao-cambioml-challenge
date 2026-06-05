@@ -39,6 +39,7 @@ export function useSessions() {
 
         const current = previous.sessions[index];
 
+        // Skip if nothing changed — avoids bumping updatedAt on a view-only switch.
         if (
           equal(current.messages, snapshot.messages) &&
           equal(current.eventStore, snapshot.eventStore)
@@ -60,7 +61,7 @@ export function useSessions() {
           updatedAt: Date.now(),
         };
 
-        // Move to front on real activity so order survives refresh
+        // Promote on write so sidebar order matches last activity after reload.
         const sessions = [
           updatedSession,
           ...previous.sessions.filter((session) => session.id !== sessionId),

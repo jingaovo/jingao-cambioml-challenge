@@ -32,6 +32,7 @@ export function useEventStore(
     stateRef.current = persistedStore;
   }
 
+  // Ref holds prior snapshot so syncEventStore can upsert incrementally.
   const state = useMemo(() => {
     const nextState = syncEventStore(messages, chatStatus, stateRef.current);
     stateRef.current = nextState;
