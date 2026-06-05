@@ -5,8 +5,9 @@ Author: Jin Gao
 A production-quality AI agent dashboard built on the [Vercel Computer Use demo](https://github.com/vercel-labs/ai-sdk-computer-use). Chat with a Claude agent that controls a remote desktop via computer-use tools, with live VNC streaming, typed event tracking, and multi-session history.
 
 ## Live Demo
+https://cambio-pr0tknbz5-jingao-s-projects.vercel.app
 
-
+[Demo Video](https://drive.google.com/file/d/1KFcrxA6kqikFLn1ut79u5tzKhntOflNI/view?usp=share_link)
 
 ## Features
 
@@ -152,7 +153,7 @@ gh api repos/jingaovo/jingao-cambioml-challenge/collaborators/lingjiekong -X PUT
 - [AI SDK](https://sdk.vercel.ai) + [Anthropic Claude Sonnet 4.5](https://docs.anthropic.com) computer use
 - [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox) + noVNC
 - [shadcn/ui](https://ui.shadcn.com) + [Tailwind CSS 4](https://tailwindcss.com)
-- TypeScript (strict, discriminated unions, no `any`)
+- TypeScript
 
 ## License
 
