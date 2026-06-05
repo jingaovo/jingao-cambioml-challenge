@@ -49,6 +49,7 @@ export function selectAgentStatusFromEvents(
   return "idle";
 }
 
+// Debug panel only — keep base64 out of the JSON dump.
 export function selectEventsForDebug(state: EventStoreState): AgentEvent[] {
   return state.events.map((event) => ({
     ...event,

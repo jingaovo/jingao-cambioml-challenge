@@ -53,6 +53,7 @@ export function useSandbox() {
     };
   }, []);
 
+  // sendBeacon on tab close — beforeunload is unreliable on mobile Safari.
   useEffect(() => {
     if (!sandboxId) return;
 

@@ -24,10 +24,7 @@ function DesktopStreamPanelComponent({
   );
 }
 
-/**
- * Isolated desktop stream — only re-renders when sandbox stream props change,
- * not when chat messages, tool events, or session state update.
- */
+// Custom comparator: ignore parent re-renders from chat/event state.
 export const DesktopStreamPanel = memo(
   DesktopStreamPanelComponent,
   (prev, next) =>

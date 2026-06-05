@@ -39,8 +39,7 @@ export default function DashboardPage() {
     void refreshDesktop();
   }, [refreshDesktop]);
 
-  // Owned at page level — outside ActiveSessionBridge so chat updates never
-  // recreate this subtree (streamUrl / isInitializing only change from sandbox).
+  // Keep VNC outside ActiveSessionBridge — chat/session updates must not remount the iframe.
   const desktopStreamPanel = useMemo(
     () => (
       <DesktopStreamPanel
@@ -95,6 +94,7 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/* key={activeSessionId} resets useChat when switching sessions */}
       <ActiveSessionBridge
         key={activeSessionId}
         session={activeSession}

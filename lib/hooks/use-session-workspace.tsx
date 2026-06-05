@@ -92,6 +92,7 @@ export function useSessionWorkspace({
     setMessages(session.messages);
   }, [session.id, session.messages, setMessages]);
 
+  // Debounce localStorage writes; flush immediately on unmount/session change.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       onPersistRef.current(session.id, {
@@ -118,6 +119,7 @@ export function useSessionWorkspace({
   const stop = useCallback(() => {
     stopGeneration();
 
+    // Mark the in-flight tool as aborted so syncEventStore can close it out.
     const lastMessage = messages.at(-1);
     const lastPart = lastMessage?.parts.at(-1);
 

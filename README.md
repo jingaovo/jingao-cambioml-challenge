@@ -5,7 +5,8 @@ Author: Jin Gao
 A production-quality AI agent dashboard built on the [Vercel Computer Use demo](https://github.com/vercel-labs/ai-sdk-computer-use). Chat with a Claude agent that controls a remote desktop via computer-use tools, with live VNC streaming, typed event tracking, and multi-session history.
 
 ## Live Demo
-https://cambio-pr0tknbz5-jingao-s-projects.vercel.app
+
+https://cambio-ml-j22gao-4020-jingao-s-projects.vercel.app
 
 [Demo Video](https://drive.google.com/file/d/1KFcrxA6kqikFLn1ut79u5tzKhntOflNI/view?usp=share_link)
 
@@ -22,19 +23,15 @@ https://cambio-pr0tknbz5-jingao-s-projects.vercel.app
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           Browser (Next.js 15)                          │
-├──────────────────────┬──────────────────────────────────────────────────┤
-│  Session Sidebar     │  Chat Panel          │  VNC Stream (memoized)      │
-│  (localStorage)      │  + Debug Panel       │  + Tool Detail Panel      │
-│                      │       ↑              │       ↑                   │
-│                      │  useSessionWorkspace │  selectedEvent            │
-│                      │       ↑              │                           │
-│                      │  useChat (AI SDK)    │  DesktopStreamPanel       │
-│                      │       ↓              │  (stable page-level slot) │
-│                      │  syncEventStore()    │                           │
-│                      │  → Event Store       │                           │
-└──────────────────────┴──────────────────────┴───────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                          Browser (Next.js 15)                            │
+├───────────────┬────────────────────────────┬─────────────────────────────┤
+│ Session       │ Chat Panel + Debug Panel   │ VNC Stream + Tool Details   │
+│ Sidebar       │ useSessionWorkspace        │ selectedEvent               │
+│ (localStorage)│   ↑ useChat (AI SDK)       │ DesktopStreamPanel          │
+│               │   ↓ syncEventStore()       │                             │
+│               │   → Event Store            │                             │
+└───────────────┴────────────────────────────┴─────────────────────────────┘
                                     │
                                     ▼
                           POST /api/chat
@@ -59,7 +56,7 @@ https://cambio-pr0tknbz5-jingao-s-projects.vercel.app
 |----------|-----------|
 | Pure `syncEventStore()` instead of effect-driven reducer | Events update in the same render cycle; no flash or duplicate parsing |
 | `ActiveSessionBridge` keyed by session ID | Clean `useChat` reset on session switch without stale message bleed |
-| `DesktopStreamPanel` hoisted at page level | Guarantees VNC iframe never re-renders on chat/tool updates |
+| `DesktopStreamPanel` hoisted at page level | VNC iframe does not re-render on chat/tool updates |
 | `fast-deep-equal` before session persist | Prevents `updatedAt` bumps (and tab reorder) on view-only session switches |
 | Discriminated unions for tool events | Type-safe payloads for `computer.*` vs `bash`; no `any` |
 
@@ -138,14 +135,14 @@ See [`.env.example`](.env.example) for all environment variables.
 
 > **Note:** Sandboxes default to a **5-minute timeout**. Click **New desktop** if the VNC stream disconnects after idle time.
 
+## Collaborators
 
+Invite these GitHub users as collaborators on the private repo:
 
-
-
-```bash
-# Example (requires repo admin access)
-gh api repos/jingaovo/jingao-cambioml-challenge/collaborators/lingjiekong -X PUT -f permission=push
-```
+- `lingjiekong`
+- `ghamry03`
+- `goldmermaid`
+- `EnergentAI`
 
 ## Tech stack
 

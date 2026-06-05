@@ -34,7 +34,6 @@ export const getDesktop = async (id?: string) => {
       ports: [NOVNC_PORT],
     });
 
-    // Start the desktop environment
     await sandbox.runCommand({
       cmd: "bash",
       args: ["/usr/local/bin/start-desktop.sh"],
@@ -44,10 +43,9 @@ export const getDesktop = async (id?: string) => {
       detached: true,
     });
 
-    // Wait for noVNC to be ready
     await waitForNoVNC(sandbox);
 
-    // Set background color (ctypes.util is missing on AL2023, load libX11 directly)
+    // AL2023 lacks ctypes.util; load libX11 directly for root window background.
     await sandbox.runCommand({
       cmd: "python3",
       args: [
@@ -65,7 +63,7 @@ lib.XCloseDisplay(d)`,
       env: DISPLAY_ENV,
     });
 
-    // Launch Chrome so the AI has a browser to work with immediately
+    // Pre-open Chrome so the first tool call doesn't wait on browser startup.
     await sandbox.runCommand({
       cmd: "bash",
       args: [

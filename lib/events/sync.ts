@@ -67,6 +67,7 @@ function upsertEventMap(
   return { ...eventsById, [event.id]: event };
 }
 
+// Derive event store from message parts each render (no separate reducer/effects).
 export function syncEventStore(
   messages: Message[],
   chatStatus: ChatStatus,
